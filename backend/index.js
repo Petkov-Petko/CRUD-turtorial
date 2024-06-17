@@ -1,5 +1,6 @@
 import express from 'express';
 import mysql from 'mysql';
+import cors from 'cors';
 
 const app = express();
 
@@ -11,7 +12,7 @@ const db = mysql.createConnection({
 });
 
 app.use(express.json());
-
+app.use(cors())
 
 app.get('/', (req, res) => {
     res.json({ message: 'Hello World'});
@@ -44,6 +45,37 @@ app.post("/books", (req, res) => {
             res.json("Book added successfully");
         }
     });
+});
+
+app.delete("/books/:id", (req, res) => {
+ const bookID = req.params.id
+ const q = "DELETE FROM books WHERE id = ?";
+
+ db.query(q, [bookID], (err, data) => {
+     if (err) {
+         res.status(500).json({ error: err });
+     } else {
+         res.json("Book deleted successfully");
+     }
+ });
+});
+app.put("/books/:id", (req, res) => {
+ const bookID = req.params.id
+ const q = "UPDATE books SET `title` = ?, `desc` = ?, `cover` = ? WHERE id = ?";
+
+ const values = [
+    req.body.title,
+    req.body.desc,
+    req.body.cover
+ ]
+
+ db.query(q, [...values, bookID], (err, data) => {
+     if (err) {
+         res.status(500).json({ error: err });
+     } else {
+         res.json("Book updated successfully");
+     }
+ });
 });
 
 app.listen(3000, () => {
